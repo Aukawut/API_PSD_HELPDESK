@@ -25,6 +25,7 @@ app.delete('/delete/user/:id',jwtMiddlewareInstance.adminAuthenticateJWT,userIns
 app.put('/update/user/:id',jwtMiddlewareInstance.adminAuthenticateJWT,userInstance.updateUser)
 
 app.post('/auth/login',authInstance.login)
+app.get('/auth/token',authInstance.authenticateJWT)
 
 app.listen(PORT, () => {
   console.log(`Listen on port ${PORT}`)
