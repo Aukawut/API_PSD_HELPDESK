@@ -1,52 +1,52 @@
 // middleware/authenticate.js
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 class jwtMiddleWare {
-
   authenticateJWT = (req, res, next) => {
-    const authHeader = req.headers.authorization
+    const authHeader = req.headers.authorization;
     if (authHeader) {
-      const token = authHeader.split(" ")[1] // Split the header and extract the token
+      const token = authHeader.split(" ")[1]; // Split the header and extract the token
       if (token) {
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
           if (err) {
-            return res.status(403).json({ err: true, msg: err.message })
+            return res.status(403).json({ err: true, msg: err.message });
           }
-          req.user = decoded
-          next()
-        })
+          req.user = decoded;
+          next();
+        });
       } else {
-        res.status(401).json({ msg: "Bearer token is required." })
+        res.status(401).json({ msg: "Bearer token is required." });
       }
     } else {
-      res.status(401).json({ msg: "Authorization header is missing." })
+      res.status(401).json({ msg: "Authorization header is missing." });
     }
-  }
+  };
   adminAuthenticateJWT = (req, res, next) => {
-    const authHeader = req.headers.authorization
+    const authHeader = req.headers.authorization;
     if (authHeader) {
-      const token = authHeader.split(" ")[1] // Split the header and extract the token
+      const token = authHeader.split(" ")[1]; // Split the header and extract the token
       if (token) {
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
           if (err) {
-            return res.status(403).json({ err: true, msg: err.message })
+            return res.json({ err: true, msg: err.message });
           }
-         
-          if (decoded.ROLE !== "Admin") {
-            return res.status(403).json({
+          
+          if (decoded.LDAP_INFO.ROLE !== "Admin") {
+            return res.json({
               err: true,
-              msg: "Permission is denined!"
-            })
+              msg: "Permission is denined!",
+              decoded
+            });
           }
-          req.user = decoded
-          next()
-        })
+          req.user = decoded;
+          next();
+        });
       } else {
-        res.status(401).json({ msg: "Bearer token is required." })
+        res.status(401).json({ msg: "Bearer token is required." });
       }
     } else {
-      res.status(401).json({ msg: "Authorization header is missing." })
+      res.status(401).json({ msg: "Authorization header is missing." });
     }
-  }
+  };
 }
 
-module.exports = jwtMiddleWare
+module.exports = jwtMiddleWare;
