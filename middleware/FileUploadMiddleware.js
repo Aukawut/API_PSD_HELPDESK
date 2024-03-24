@@ -1,0 +1,53 @@
+const multer = require("multer");
+const path = require("path");
+
+class FileUploadMiddleware {
+  // Multer storage configuration
+  storage = multer.memoryStorage();
+  upload = multer({ storage: this.storage });
+
+  cpUpload = this.upload.fields([{ name: "images", maxCount: 3 }]);
+  fileUploadMiddleware = (req, res, next) => {
+    let countErrorSize = 0;
+    let countErrorType = 0;
+    this.cpUpload(req, res, function (err) {
+      if (!req.files) {
+        next();
+      } else {
+        const images = req.files.images;
+        for (let i = 0; i < images.length; i++) {
+          console.log(images[i]);
+          if (
+            path.extname(`${images[i].originalname}`) !== ".jpg" &&
+            path.extname(`${images[i].originalname}`) !== ".png"
+          ) {
+            countErrorType += 1;
+          }
+          if (images[i].size > 1024 * 1024) {
+            countErrorSize += 1;
+          }
+        }
+        if (countErrorSize !== 0) {
+          return res.json({
+            err: true,
+            msg: "Allowed upload files size less more 1 MB Only",
+          });
+        } else if (countErrorType !== 0) {
+          return res.json({
+            err: true,
+            msg: "Allowed upload files type .png,.jpg Only",
+          });
+        }else if(images.length > 3){
+            return res.json({
+                err: true,
+                msg: "Allowed upload files less more 3 files only",
+              });
+        } else {
+            console.log(images.length);
+          next();
+        }
+      }
+    });
+  };
+}
+module.exports = FileUploadMiddleware;
