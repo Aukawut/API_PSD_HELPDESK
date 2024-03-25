@@ -111,11 +111,11 @@ class factoryController {
         });
       });
   }
-  async deleteMutipleFactory(req,res){
-    const {id} = req.body ;
-    if(id && id.length > 0){
-      const idFactory = id.join(',');
-      const query = `DELETE FROM site_factory WHERE sf_ID IN (${idFactory})` 
+  async deleteMutipleFactory(req, res) {
+    const { id } = req.body;
+    if (id && id.length > 0) {
+      const idFactory = id.join(",");
+      const query = `DELETE FROM site_factory WHERE sf_ID IN (${idFactory})`;
       const pool = await sql.connect(sqlConfig);
       await pool
         .request()
@@ -142,37 +142,37 @@ class factoryController {
             msg: err,
           });
         });
-    }else{
+    } else {
       return res.json({
-        err:true,
-        msg:'Some thing went wrong!'
-      })
+        err: true,
+        msg: "Some thing went wrong!",
+      });
     }
   }
 
   async addFactory(req, res) {
     const { code, name, desc, empCode, status } = req.body;
-  
+
     if (!code || !name || !empCode || !status) {
       return res.json({ err: true, msg: "Error payload" });
     }
-  
+
     try {
       const pool = await sql.connect(sqlConfig);
-  
+
       // Check if factory code already exists
       const existingFactory = await pool
         .request()
         .input("code", sql.NVarChar, code.trim())
         .query(`SELECT * FROM site_factory WHERE sf_Code = @code`);
-  
+
       if (existingFactory.recordset.length > 0) {
         return res.json({
           err: true,
           msg: "Factory code is duplicated !",
         });
       }
-  
+
       // Insert New Factory
       const insertResult = await pool
         .request()
@@ -184,7 +184,7 @@ class factoryController {
         .query(
           `INSERT INTO [dbo].[site_factory] (sf_Code,sf_Name,sf_Description,sf_CreateBy,sf_Status,sf_CreateDate) VALUES (@code,@name,@desc,@empCode,@status,GETDATE())`
         );
-  
+
       return res.json({
         err: false,
         msg: "Added !",
@@ -204,10 +204,31 @@ class factoryController {
     const { id } = req.params;
     const { code, name, desc, empCode, status } = req.body;
 
-    if (!id || !code || !name || !desc || !empCode || !status) {
+    if (!id || !code || !name  || !empCode || !status) {
       return res.json({ err: true, msg: "Error payload" });
     }
     const pool = await sql.connect(sqlConfig);
+    try {
+      // Check if factory code already exists
+      const existingFactory = await pool
+        .request()
+        .input("code", sql.NVarChar, code.trim())
+        .input("id", sql.Int, id.trim())
+        .query(`SELECT * FROM site_factory WHERE sf_Code = @code AND sf_ID <> @id`);
+
+      if (existingFactory.recordset.length > 0) {
+        return res.json({
+          err: true,
+          msg: "Factory code is duplicated !",
+        });
+      }
+    } catch (err) {
+      return res.json({
+        err: true,
+        msg: err,
+      });
+    }
+
     await pool
       .request()
       .input("id", sql.Int, id.trim())
@@ -233,11 +254,12 @@ class factoryController {
         return res.json({
           err: false,
           msg: "Updated!",
+          status:'Ok'
         });
       })
       .catch((err) => {
         console.log(err);
-        res.json({
+        return res.json({
           err: true,
           msg: err,
         });
