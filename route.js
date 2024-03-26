@@ -11,7 +11,7 @@ const machineController = require('./controller/machineController')
 const userController = require('./controller/userController');
 const categoryController = require('./controller/categoryController');
 const TypeRequestController = require('./controller/TypeRequestController')
-const areaController = require('./controller/areaController')
+const processController = require('./controller/processController')
 
 
 const jwtMiddleWare = require("./middleware/jwtMiddleWare");
@@ -24,7 +24,7 @@ const machineInstance = new machineController();
 const userInstance = new userController();
 const categoryInstance = new categoryController();
 const TypeRequestInstance = new TypeRequestController();
-const areaInstance = new areaController();
+const processInstance = new processController();
 
 const jwtMiddlewareInstance = new jwtMiddleWare();
 const FileUploadInstance = new FileUploadMiddleware();
@@ -78,12 +78,18 @@ app.put('/factory/update/:id',jwtMiddlewareInstance.adminAuthenticateJWT,factory
 
 // Machine Route
 app.get('/machine',jwtMiddlewareInstance.authenticateJWT,machineInstance.index)
+app.get('/machineLists',jwtMiddlewareInstance.authenticateJWT,machineInstance.machineList)
 app.get('/machine/:factory',jwtMiddlewareInstance.authenticateJWT,machineInstance.machineByFactory)
 app.get('/machine/process/:mc_code',jwtMiddlewareInstance.authenticateJWT,machineInstance.processByMachine)
+app.post('/machine/add',jwtMiddlewareInstance.adminAuthenticateJWT,machineInstance.addMachine)
+app.put('/machine/update/:id',jwtMiddlewareInstance.adminAuthenticateJWT,machineInstance.updateMachine)
+app.delete('/machine/delete/:id',jwtMiddlewareInstance.adminAuthenticateJWT,machineInstance.deleteMachine)
+app.post('/machine/delete/multiple',jwtMiddlewareInstance.adminAuthenticateJWT,machineInstance.deleteMultipleMachine)
 
+// Process Route
 
-//Area Route
-app.get('/area',jwtMiddlewareInstance.authenticateJWT,areaInstance.index);
+app.get("/process",jwtMiddlewareInstance.authenticateJWT,processInstance.index)
+
 
 // auth Route
 app.post("/auth/login", authInstance.login);

@@ -24,9 +24,10 @@ class factoryController {
           });
         }
         if (result.recordset && result.recordset.length > 0) {
-          res.json({
+          return res.json({
             err: false,
             result: result.recordset,
+            status:'Ok'
           });
         } else {
           return res.json({
@@ -37,7 +38,7 @@ class factoryController {
       })
       .catch((err) => {
         console.log(err);
-        res.json({
+        return res.json({
           err: true,
           msg: err,
         });
