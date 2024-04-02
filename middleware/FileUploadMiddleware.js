@@ -11,12 +11,11 @@ class FileUploadMiddleware {
     let countErrorSize = 0;
     let countErrorType = 0;
     this.cpUpload(req, res, function (err) {
-      if (!req.files) {
+      if (!req.files || !req.files.images) {
         next();
       } else {
         const images = req.files.images;
         for (let i = 0; i < images.length; i++) {
-          console.log(images[i]);
           if (
             path.extname(`${images[i].originalname}`) !== ".jpg" &&
             path.extname(`${images[i].originalname}`) !== ".png"
@@ -43,11 +42,12 @@ class FileUploadMiddleware {
                 msg: "Allowed upload files less more 3 files only",
               });
         } else {
-            console.log(images.length);
+           
           next();
         }
       }
     });
   };
+
 }
 module.exports = FileUploadMiddleware;

@@ -160,7 +160,6 @@ class factoryController {
 
     try {
       const pool = await sql.connect(sqlConfig);
-
       // Check if factory code already exists
       const existingFactory = await pool
         .request()
@@ -173,7 +172,6 @@ class factoryController {
           msg: "Factory code is duplicated !",
         });
       }
-
       // Insert New Factory
       const insertResult = await pool
         .request()
@@ -182,7 +180,7 @@ class factoryController {
         .input("desc", sql.NVarChar, desc)
         .input("empCode", sql.NVarChar, empCode.trim())
         .input("status", sql.NVarChar, status)
-        .query(
+        .execute(
           `INSERT INTO [dbo].[site_factory] (sf_Code,sf_Name,sf_Description,sf_CreateBy,sf_Status,sf_CreateDate) VALUES (@code,@name,@desc,@empCode,@status,GETDATE())`
         );
 

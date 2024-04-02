@@ -89,7 +89,7 @@ class machineController {
       .request()
       .input("factory", sql.NVarChar, factory)
       .query(
-        `SELECT s.[site_mccode],s.[site_mcname],p.name_process  FROM [dbo].[site_machinemaster_update]s
+        `SELECT s.[site_mccode],s.[site_mcname],p.name_process,p.id_process  FROM [dbo].[site_machinemaster_update]s
         LEFT JOIN site_process p ON s.site_process_id = p.id_process
         WHERE site_status='ENABLE' 
         AND s.site_factory = @factory ORDER BY s.site_mcname asc`

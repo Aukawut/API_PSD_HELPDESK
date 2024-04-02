@@ -6,7 +6,7 @@ class TypeRequestController {
     await pool
       .request()
       .query(
-        `SELECT [type_id], [type_name] FROM [V_HDCategory] ORDER BY type_id DESC`
+        `SELECT [type_id], [type_name] FROM [V_HDCategory] ORDER BY type_id DESC` 
       ) // WHERE Type = 8 ที่ตาราง site_types
       .then((result, err) => {
         if (err) {

@@ -3,6 +3,8 @@ const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const multer = require('multer');
+const moment = require('moment')
+
 
 const authController = require("./controller/authController");
 const jobsController = require("./controller/jobsController");
@@ -12,7 +14,11 @@ const userController = require('./controller/userController');
 const categoryController = require('./controller/categoryController');
 const TypeRequestController = require('./controller/TypeRequestController')
 const processController = require('./controller/processController')
-
+const jobTypeController = require('./controller/jobTypeController')
+const RankJobController = require('./controller/RankJobController')
+const ContactController = require('./controller/ContactController')
+const StatusController = require('./controller/StatusController')
+const DashoboardController = require('./controller/DashoboardController')
 
 const jwtMiddleWare = require("./middleware/jwtMiddleWare");
 const FileUploadMiddleware = require("./middleware/FileUploadMiddleware");
@@ -25,6 +31,11 @@ const userInstance = new userController();
 const categoryInstance = new categoryController();
 const TypeRequestInstance = new TypeRequestController();
 const processInstance = new processController();
+const jobTypeInstance = new jobTypeController();
+const RankInstance = new RankJobController();
+const ContactInstance = new ContactController();
+const StatusInstance = new StatusController();
+const DashoboardInstance = new DashoboardController();
 
 const jwtMiddlewareInstance = new jwtMiddleWare();
 const FileUploadInstance = new FileUploadMiddleware();
@@ -59,14 +70,27 @@ app.delete('/category/delete/:id',jwtMiddlewareInstance.adminAuthenticateJWT,cat
 app.post('/category/delete/multiple',jwtMiddlewareInstance.adminAuthenticateJWT,categoryInstance.deleteCategoryFactory)
 app.put('/category/update/:id',jwtMiddlewareInstance.adminAuthenticateJWT,categoryInstance.updateCategory)
 
-// Job Route
+// Job Request Route
+app.post("/jobs/add",FileUploadInstance.fileUploadMiddleware,jobsInstance.addJob);
 app.get("/jobs/count/admin",jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.countJobs);
 app.get("/jobs/jobByFactory",jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.getTopFiveFactoryRequest);
-app.post("/jobs/add",FileUploadInstance.fileUploadMiddleware,(req,res,next) => {
-   res.json({
-    file:'123'
-   })
-});
+app.get('/jobs/details/:status',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getDetailsJobByStatus)
+app.get('/jobs/details/call/:callNo/:callId',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getDetailsJobByCallNo)
+app.get('/jobs/info/:id',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getInfoJobByCallId)
+app.put('/job/update/:call_subno',jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.updateJob)
+app.get('/job/solve/:subNo',jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.getSolve)
+app.get('/job/details/:subNo',jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.getCommentDetails)
+
+// Job Type 
+app.get('/jobType',jwtMiddlewareInstance.adminAuthenticateJWT,jobTypeInstance.getJobsType)
+app.get('/followUpList',jwtMiddlewareInstance.adminAuthenticateJWT,jobTypeInstance.getFollowUpList)
+
+// Status Type
+app.get('/statusList',jwtMiddlewareInstance.adminAuthenticateJWT,StatusInstance.getListsStatus)
+
+
+// Rank 
+app.get('/rank',jwtMiddlewareInstance.adminAuthenticateJWT,RankInstance.getRank)
 
 // Factory Route
 app.get('/factory',jwtMiddlewareInstance.authenticateJWT,factoryInstance.index);
@@ -87,9 +111,23 @@ app.delete('/machine/delete/:id',jwtMiddlewareInstance.adminAuthenticateJWT,mach
 app.post('/machine/delete/multiple',jwtMiddlewareInstance.adminAuthenticateJWT,machineInstance.deleteMultipleMachine)
 
 // Process Route
-
 app.get("/process",jwtMiddlewareInstance.authenticateJWT,processInstance.index)
+app.post("/process/add",jwtMiddlewareInstance.adminAuthenticateJWT,processInstance.addProcess)
+app.put("/process/update/:id",jwtMiddlewareInstance.adminAuthenticateJWT,processInstance.updateProcess)
+app.delete("/process/delete/:id",jwtMiddlewareInstance.adminAuthenticateJWT,processInstance.deleteProcess)
+app.post("/process/delete/multiple",jwtMiddlewareInstance.adminAuthenticateJWT,processInstance.deleteMultipleProcess)
 
+// Contact Route 
+app.get('/contact',jwtMiddlewareInstance.adminAuthenticateJWT,ContactInstance.getContact)
+
+app.get('/date',(req,res) => {
+  const datetimeNow =  moment().locale('th').add(7,'hours').format("YYYY-MM-DD HH:mm:ss")+".000";
+  res.json(datetimeNow.toString())
+})
+
+//Dashboard Route 
+app.get('/data/topfiveMcRequest',jwtMiddlewareInstance.adminAuthenticateJWT,DashoboardInstance.getTop5MachineRequest)
+app.get('/data/dataOverdueByDays/:day',jwtMiddlewareInstance.adminAuthenticateJWT,DashoboardInstance.dataOverdueByDays)
 
 // auth Route
 app.post("/auth/login", authInstance.login);
