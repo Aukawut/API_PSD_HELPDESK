@@ -81,7 +81,7 @@ class factoryController {
 
   async deleteFactory(req, res) {
     const { id } = req.params;
-    if (!id) {
+    if (!id || id == undefined) {
       return res.json({ err: true, msg: "Error id" });
     }
     const pool = await sql.connect(sqlConfig);

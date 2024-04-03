@@ -81,6 +81,9 @@ class jobsController {
 
   async getDetailsJobByStatus(req, res) {
     const { status } = req.params;
+    if(status !== '' && status !== undefined){
+
+  
     const strQuery = FunctionInstance.getStringQuery(status);
     if (strQuery !== undefined) {
       const pool = await sql.connect(sqlConfig);
@@ -117,8 +120,10 @@ class jobsController {
       });
     }
   }
+  }
   async getDetailsJobByCallNo(req, res) {
     const { callNo, callId } = req.params;
+    if(callNo !== "" && callId !== "" && callNo !== undefined && callId !== undefined){
     const pool = await sql.connect(sqlConfig);
     await pool
       .request()
@@ -150,13 +155,15 @@ class jobsController {
       .catch((err) => {
         return res.json({ err: true, msg: err.message });
       });
+    }
   }
   async getInfoJobByCallId(req, res) {
     const { id } = req.params;
+    if(id !== "" && id !== undefined){
     const pool = await sql.connect(sqlConfig);
     await pool
       .request()
-      .input("id", sql.Int, id)
+      .input("id", sql.Int, parseInt(id))
       .query(
         `SELECT * FROM [DB_PSDHELPDESK].[dbo].[V_HDJobInfo] WHERE call_id = @id`
       )
@@ -183,6 +190,7 @@ class jobsController {
       .catch((err) => {
         return res.json({ err: true, msg: err.message });
       });
+    }
   }
   async addJob(req, res) {
     const {
@@ -205,7 +213,7 @@ class jobsController {
     }
 
     const images = req.files.images;
-
+    
     const clientIP = IP.address();
 
     const pool = await sql.connect(sqlConfig);
@@ -222,11 +230,9 @@ class jobsController {
         err: true,
         msg: "HRC data error!",
       });
-    }
+    } 
 
-    // เข้ารหัส Images Blob
-    // const fileBuffer = images[0].buffer;
-    // const fileHex = `0x${fileBuffer.toString("hex")}`;
+ 
 
     const callStatus = 28; // New Jobs
     const callRequest = 83; //Job Repair
@@ -312,6 +318,20 @@ class jobsController {
             result: insert,
           });
         }
+
+    // Upload File Binary เข้ารหัส Images Blob
+    
+    if(images.length > 0) {
+      for(let i = 0; i < images.length ; i++){
+        const fileBuffer = images[i].buffer;
+        const fileHex = `0x${fileBuffer.toString("hex")}`;
+        await pool.request()
+        .query(`INSERT INTO TEST_IMG (image) VALUES (${fileHex})`);
+      }
+     
+    }      
+   
+
       } catch (err) {
         return res.json({
           err: true,
@@ -380,8 +400,7 @@ class jobsController {
         });
       }
     }
-    // await pool.request()
-    //     .query(`INSERT INTO TEST_IMG (image) VALUES (${fileHex})`);
+   
 
     // console.log('File uploaded to SQL Server successfully.');
     // res.status(200).send('File uploaded successfully.');
@@ -456,6 +475,7 @@ class jobsController {
 
   async getSolve(req, res) {
     const { subNo } = req.params;
+    if(subNo !== "" && subNo !== undefined){
     try {
       const pool = await sql.connect(sqlConfig);
 
@@ -481,8 +501,10 @@ class jobsController {
       console.log(error);
     }
   }
+  }
   async getCommentDetails(req, res) {
     const { subNo } = req.params;
+    if(subNo !== "" && subNo !== undefined){
     try {
       const pool = await sql.connect(sqlConfig);
 
@@ -508,6 +530,7 @@ class jobsController {
     } catch (error) {
       console.log(error);
     }
+  }
   }
 }
 
