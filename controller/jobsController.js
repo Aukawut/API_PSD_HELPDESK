@@ -211,16 +211,14 @@ class jobsController {
         msg: "Please fill out the information completely !",
       });
     }
-
-    const images = req.files.images;
     
+    const images = req.files.images; // ไฟล์แนบ
     const clientIP = IP.address();
-
     const pool = await sql.connect(sqlConfig);
 
     //Time for stop-start breakdown
     const datetimeNow =
-      moment().add(7, "hours").format("YYYY-MM-DD HH:mm:ss") + ".000";
+      moment().add(7, "hours").format("YYYY-MM-DD HH:mm:ss") + ".000"; // .z+7
 
     const device1 = datetimeNow.split(" ")[1];
 
@@ -231,8 +229,6 @@ class jobsController {
         msg: "HRC data error!",
       });
     } 
-
- 
 
     const callStatus = 28; // New Jobs
     const callRequest = 83; //Job Repair
@@ -248,13 +244,13 @@ class jobsController {
     }
 
     const dataState =
-      codeUserAgent !== "" && codeUserAgent !== null
+    codeUserAgent && codeUserAgent !== "" && codeUserAgent !== null
         ? await FunctionInstance.GetDataMailContactInfo(codeUserAgent)
         : "";
 
     const dataHrc = JSON.parse(hrc_info); // Data ของ User ที่เข้าระบบ
 
-    if (dataState == null) {
+    if (dataState == null || dataState == false ) {
       // มีการส่งค่า Code User Agent แต่ไม่มีข้อมูลในระบบ GetDataMailContactInfo() จะ Return Null
       return res.json({
         err: true,
@@ -265,7 +261,7 @@ class jobsController {
 
     const stringQuery = `INSERT INTO [DB_PSDHELPDESK].[dbo].[site_calls] ([call_subno],[call_subtitle],[call_first_name],[call_phone],[call_email],[call_department],[call_request],[call_device],[call_details],[call_status],[call_user],[call_device1],[call_device2],[call_device3],[call_problem_device],[call_uidvirus],[call_ip],[call_SourceGroupID],[call_Time1],[call_Time5]) 
       VALUES (@callSubno,@title,@fname,@phone,@email,@department,@callRequest,@callDevice,@details,@callStatus,@callUser,@device1,@device2,@device3,@deviceProblem,@uidVirus,@ip,@souceGroup,@time1,@time5)`;
-    if (dataState == "" || !codeUserAgent) {
+    if (dataState == "" && !codeUserAgent) {
       // ไม่มีการส่งค่า Code User Agent
       try {
         const callUser = dataHrc.UHR_EmpCode;
@@ -310,7 +306,23 @@ class jobsController {
           details
         );
 
-        if (sendMail) {
+         // Upload File Binary เข้ารหัส Images Blob
+
+         if(images.length > 0) {
+          console.log(images);
+          for(let i = 0; i < images.length ; i++){
+            const fileBuffer = images[i].buffer;
+            const contentType = images[i].mimetype ;
+            const originalFileName = images[i].originalname ;
+            const fileHex = `0x${fileBuffer.toString("hex")}`;
+            await pool.request()
+            .query(`INSERT INTO site_upload ([call_subno],[Name],[ContentType],[Data]) VALUES (${callSubno.callSubNo},${originalFileName},${contentType},${fileHex})`);
+          }
+        }  
+        
+        console.log("แจ้งเอง");
+
+        if (sendMail) {   
           //Success !
           return res.json({
             err: false,
@@ -318,27 +330,15 @@ class jobsController {
             result: insert,
           });
         }
-
-    // Upload File Binary เข้ารหัส Images Blob
-    
-    if(images.length > 0) {
-      for(let i = 0; i < images.length ; i++){
-        const fileBuffer = images[i].buffer;
-        const fileHex = `0x${fileBuffer.toString("hex")}`;
-        await pool.request()
-        .query(`INSERT INTO TEST_IMG (image) VALUES (${fileHex})`);
-      }
-     
-    }      
-   
-
       } catch (err) {
+        console.log(images);
         return res.json({
           err: true,
           msg: err,
         });
       }
     } else if (dataState !== "" && dataState && dataState?.length > 0) {
+      
       try {
         // แจ้งงานแทน
         const callUser = dataState[0].UHR_EmpCode;
@@ -382,7 +382,19 @@ class jobsController {
           details
         );
 
-        if (sendMail) {
+    // Upload File Binary เข้ารหัส Images Blob
+        if(images.length > 0) {
+          for(let i = 0; i < images.length ; i++){
+            const fileBuffer = images[i].buffer;
+            const contentType = images[i].mimetype ;
+            const originalFileName = images[i].originalname ;
+            const fileHex = `0x${fileBuffer.toString("hex")}`;
+            await pool.request()
+            .query(`INSERT INTO site_upload ([call_subno],[Name],[ContentType],[Data]) VALUES (${callSubno.callSubNo},'${originalFileName}','${contentType}',${fileHex})`);
+          }
+        }  
+        console.log("แจ้งงานแทน");
+        if (sendMail) { 
           //Success !
           return res.json({
             err: false,
@@ -393,6 +405,7 @@ class jobsController {
         }
       } catch (err) {
         console.log(err);
+        
         return res.json({
           err: true,
           msg: err,
@@ -400,10 +413,7 @@ class jobsController {
         });
       }
     }
-   
 
-    // console.log('File uploaded to SQL Server successfully.');
-    // res.status(200).send('File uploaded successfully.');
   }
 
   async updateJob(req, res) {
