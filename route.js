@@ -16,6 +16,7 @@ const RankJobController = require('./controller/RankJobController')
 const ContactController = require('./controller/ContactController')
 const StatusController = require('./controller/StatusController')
 const DashoboardController = require('./controller/DashoboardController')
+const ImageController = require('./controller/ImageController')
 
 const jwtMiddleWare = require("./middleware/jwtMiddleWare");
 const FileUploadMiddleware = require("./middleware/FileUploadMiddleware");
@@ -33,6 +34,7 @@ const RankInstance = new RankJobController();
 const ContactInstance = new ContactController();
 const StatusInstance = new StatusController();
 const DashoboardInstance = new DashoboardController();
+const ImageInstance = new ImageController();
 
 const jwtMiddlewareInstance = new jwtMiddleWare();
 const FileUploadInstance = new FileUploadMiddleware();
@@ -75,6 +77,7 @@ app.get('/jobs/info/:id',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getI
 app.put('/job/update/:call_subno',jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.updateJob)
 app.get('/job/solve/:subNo',jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.getSolve)
 app.get('/job/comment/:subNo',jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.getCommentDetails)
+app.get('/user/dashboardUser/:code',jwtMiddlewareInstance.authenticateJWT,jobsInstance.countJobsUser)
 
 // Job Type 
 app.get('/jobType',jwtMiddlewareInstance.adminAuthenticateJWT,jobTypeInstance.getJobsType)
@@ -120,6 +123,9 @@ app.get('/data/topfiveMcRequest',jwtMiddlewareInstance.adminAuthenticateJWT,Dash
 app.post('/data/dataOverdueByDays',jwtMiddlewareInstance.adminAuthenticateJWT,DashoboardInstance.dataOverdueByDays)
 app.get('/data/summary/:year',jwtMiddlewareInstance.adminAuthenticateJWT,DashoboardInstance.dataSummaryPerMonthYear)
 app.get('/data/menuYear',jwtMiddlewareInstance.adminAuthenticateJWT,DashoboardInstance.getMenuYear)
+
+//Image
+app.get('/images/:call_no',jwtMiddlewareInstance.authenticateJWT,ImageInstance.index)
 
 // auth Route
 app.post("/auth/login", authInstance.login);

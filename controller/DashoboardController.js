@@ -6,8 +6,11 @@ class DashoboardController {
       const pool = await sql.connect(sqlConfig);
       const result = await pool.request().query(
         `WITH CTE_C AS (SELECT TOP 5 COUNT (*) AS AMOUNT_SUM,call_device3 
-          FROM [dbo].[V_HDALLJobs] GROUP BY call_device3)
-          SELECT * FROM CTE_C`
+        FROM [dbo].[V_HDALLJobs] GROUP BY call_device3)
+        SELECT CTE_C.call_device3,CTE_C.AMOUNT_SUM 
+    ,CASE WHEN m.site_mcname IS NULL THEN CTE_C.call_device3 ELSE m.site_mcname END As site_mcname FROM CTE_C
+     LEFT JOIN [dbo].site_machinemaster_update m 
+    ON CTE_C.call_device3 = m.[site_mccode]`
       );
       if (result && result.recordset?.length > 0) {
         return res.json({
@@ -28,10 +31,10 @@ class DashoboardController {
     }
   }
   async dataOverdueByDays(req, res) {
-    let  day  = parseInt(req.body.day);
+    let day = parseInt(req.body.day);
     if (isNaN(day) || day === undefined) {
-        // Provide a default value if day is NaN or undefined
-        day = -30; // Or whatever default value you want
+      // Provide a default value if day is NaN or undefined
+      day = -30; // Or whatever default value you want
     }
     try {
       const pool = await sql.connect(sqlConfig);
@@ -148,13 +151,15 @@ class DashoboardController {
       });
     }
   }
-  async getMenuYear(req,res) {
-    try{
+  async getMenuYear(req, res) {
+    try {
       const pool = await sql.connect(sqlConfig);
-      const result = await pool.request()
-        .query(`SELECT COUNT (*) as amount_,[year_] FROM [dbo].[V_Summary_Final] GROUP BY [year_]`);
+      const result = await pool
+        .request()
+        .query(
+          `SELECT COUNT (*) as amount_,[year_] FROM [dbo].[V_Summary_Final] GROUP BY [year_] ORDER BY year_ DESC`
+        );
       if (result && result.recordset?.length > 0) {
-
         return res.json({
           err: false,
           result: result.recordset,
@@ -165,7 +170,7 @@ class DashoboardController {
           msg: "Not Founded!",
         });
       }
-    }catch (err) {
+    } catch (err) {
       return res.json({
         err: true,
         msg: err,

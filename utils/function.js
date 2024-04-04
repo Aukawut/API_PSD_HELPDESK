@@ -1,4 +1,5 @@
 const { sql, sqlConfig } = require("../config/connectDB");
+const axios = require("axios");
 
 class FunctionUtils {
   async getLastCallNo() {
@@ -74,12 +75,74 @@ class FunctionUtils {
       console.log(err);
     }
   }
-  async sendMail(callSubno,callEmail,appName,callUser,callLeadercode,title,details){
-    
-   return true ;
+  async sendMail(
+    callSubno,
+    callEmail,
+    appName,
+    callUser,
+    callLeadercode,
+    title,
+    details
+  ) {
+    const pool = await sql.connect(sqlConfig);
+    const jobInfo = await pool
+      .request()
+      .input("callSubNo", sql.NVarChar, callSubno)
+      .query(
+        `SELECT * FROM [DB_PSDHELPDESK].[dbo].[V_HDALLJobs] WHERE [call_subno] = @callSubNo`
+      );
+
+    if (jobInfo && jobInfo.recordset.length > 0) {
+
+      const leaderInfo = await pool
+        .request()
+        .input("empCode", sql.NVarChar, callLeadercode)
+        .query(
+          `SELECT * FROM [DB_PSDHELPDESK].[dbo].[ESV_HDUserStore] WHERE [UHR_EmpCode] = @empCode`
+        );
+
+      const groupInfo = await pool
+        .request()
+        .input("empCode", callUser)
+        .query(
+          `SELECT * FROM [DB_PSDHELPDESK].[dbo].[V_PSTH_GROUPMAIL] WHERE [UHR_EmpCode] = @empCode`
+        );
+
+      // leader email (UHR_Email)
+      const LeaderEmail =
+        leaderInfo && leaderInfo.recordset.length > 0
+          ? leaderInfo.recordset[0].UHR_Email
+          : "";
+      const UserEmail =
+        jobInfo && jobInfo.recordset.length > 0
+          ? jobInfo.recordset[0].UHR_email
+          : "";
+      const GroupMailUser =
+        groupInfo && groupInfo.recordset.length > 0
+          ? (groupInfo.recordset[0].ESD_Group_PSTH).toLowerCase()
+          : "";
+
+      
+      const payload = {
+        Subject: `${appName} [* ${jobInfo.recordset[0]?.call_status} *] [#${jobInfo.recordset[0].call_subno}] ${title}`,
+        Application: appName,
+        To: UserEmail,
+        Leader: LeaderEmail,
+        Group: GroupMailUser,
+        CallSubNo:jobInfo.recordset[0].call_subno,
+        Status :jobInfo.recordset[0]?.call_status};
+
+      await axios
+        .post("http://localhost:9001/api/SendMail", payload)
+        .then((res) => {
+          console.log(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      console.log("Not send!");
+    }
   }
-
-  
-
 }
 module.exports = FunctionUtils;

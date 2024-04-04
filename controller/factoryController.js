@@ -172,6 +172,7 @@ class factoryController {
           msg: "Factory code is duplicated !",
         });
       }
+      
       // Insert New Factory
       const insertResult = await pool
         .request()
@@ -181,7 +182,7 @@ class factoryController {
         .input("empCode", sql.NVarChar, empCode.trim())
         .input("status", sql.NVarChar, status)
         .execute(
-          `INSERT INTO [dbo].[site_factory] (sf_Code,sf_Name,sf_Description,sf_CreateBy,sf_Status,sf_CreateDate) VALUES (@code,@name,@desc,@empCode,@status,GETDATE())`
+          `INSERT INTO [DB_PSDHELPDESK].[dbo].[site_factory] (sf_Code,sf_Name,sf_Description,sf_CreateBy,sf_Status,sf_CreateDate) VALUES (@code,@name,@desc,@empCode,@status,GETDATE())`
         );
 
       return res.json({
