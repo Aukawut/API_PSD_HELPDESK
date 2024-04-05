@@ -133,7 +133,7 @@ class FunctionUtils {
         Status :jobInfo.recordset[0]?.call_status};
 
       await axios
-        .post("http://localhost:9001/api/SendMail", payload)
+        .post("http://10.144.2.175:81/api/SendMail", payload)
         .then((res) => {
           console.log(res.data);
         })

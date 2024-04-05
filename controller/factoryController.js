@@ -181,7 +181,7 @@ class factoryController {
         .input("desc", sql.NVarChar, desc)
         .input("empCode", sql.NVarChar, empCode.trim())
         .input("status", sql.NVarChar, status)
-        .execute(
+        .query(
           `INSERT INTO [DB_PSDHELPDESK].[dbo].[site_factory] (sf_Code,sf_Name,sf_Description,sf_CreateBy,sf_Status,sf_CreateDate) VALUES (@code,@name,@desc,@empCode,@status,GETDATE())`
         );
 
