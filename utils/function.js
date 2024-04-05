@@ -57,6 +57,26 @@ class FunctionUtils {
     }
   }
 
+  getStringQueryUsers(status) {
+    // Function Filter status
+    switch (status) {
+      case "New Jobs":
+        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDNewJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
+      case "Accept Jobs":
+        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDAcceptJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC,call_date DESC";
+      case "Finish Jobs":
+        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDFinishJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC,call_date DESC";
+      case "Outside Jobs":
+        return "SELECT  [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDOutsideJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
+      case "Improve Jobs":
+        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDProjectJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
+      case "Close jobs":
+        return "SELECT  [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDCloseJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
+      default:
+        return undefined;
+    }
+  }
+
   async GetDataMailContactInfo(leaderCode) {
     try {
       const stmt = `SELECT * FROM ESV_HDUserStore WHERE [UHR_EmpCode] = @leaderCode`;

@@ -72,6 +72,7 @@ app.post("/jobs/add",FileUploadInstance.fileUploadMiddleware,jobsInstance.addJob
 app.get("/jobs/count/admin",jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.countJobs);
 app.get("/jobs/jobByFactory",jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.getTopFiveFactoryRequest);
 app.get('/jobs/information/:status',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getDetailsJobByStatus)
+app.get('/jobs/informationUser/:status/:code',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getDetailsJobByStatusUser)
 app.get('/jobs/details/call/:callNo/:callId',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getDetailsJobByCallNo)
 app.get('/jobs/info/:id',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getInfoJobByCallId)
 app.put('/job/update/:call_subno',jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.updateJob)
@@ -134,5 +135,8 @@ app.get("/auth/token", authInstance.authenticateJWT);
 
 
 app.listen(PORT, () => {
-  console.log(`Listen on port ${PORT}`);
+
+  console.log(`Server Listening on port ${PORT}`);
+
+
 });

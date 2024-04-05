@@ -155,6 +155,49 @@ class jobsController {
       }
     }
   }
+
+  async getDetailsJobByStatusUser(req, res) {
+    const { status,code } = req.params;
+    if (status !== "" && status !== undefined && code !== "" && code !== undefined) {
+      const strQuery = FunctionInstance.getStringQueryUsers(status);
+      if (strQuery !== undefined) {
+        const pool = await sql.connect(sqlConfig);
+        await pool
+          .request()
+          .input('EmpCode',sql.NVarChar,code)
+          .query(`${strQuery}`)
+          .then((result, err) => {
+            if (err) {
+              return res.json({
+                err: true,
+                msg: err,
+              });
+            }
+            if (result.recordset && result.recordset.length > 0) {
+              return res.status(200).json({
+                err: false,
+                result: result.recordset,
+                status: "Ok",
+              });
+            } else {
+              return res.json({
+                err: true,
+                msg: "Something went wrong!",
+              });
+            }
+          })
+          .catch((err) => {
+            return res.json({ err: true, msg: err.message });
+          });
+      } else {
+        return res.json({
+          err: true,
+          msg: "error",
+        });
+      }
+    }
+  }
+
   async getDetailsJobByCallNo(req, res) {
     const { callNo, callId } = req.params;
     if (
