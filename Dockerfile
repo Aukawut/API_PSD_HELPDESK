@@ -2,7 +2,7 @@
 FROM node:18
 
 # Set environment variables
-ENV JWT_SECRET=jwt_secret_$@!
+ENV JWT_SECRET=jwt_secret_\$\@!
 ENV PORT=8081
 ENV DB_USER=helpdesk
 ENV DB_PWD=helpdesk@2018
