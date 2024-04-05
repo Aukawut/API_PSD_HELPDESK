@@ -4,7 +4,6 @@ const fs = require("fs");
 const moment = require("moment/moment");
 const IP = require("ip");
 
-
 const FunctionInstance = new FunctionUtils();
 
 class jobsController {
@@ -43,7 +42,7 @@ class jobsController {
       });
   }
   async countJobsUser(req, res) {
-    const empCode = req.body.emp_code;
+    const empCode = req.params.code;
     const pool = await sql.connect(sqlConfig);
     await pool
       .request()
@@ -56,6 +55,7 @@ class jobsController {
             msg: err.msg,
           });
         }
+
         if (result.recordset && result.recordset.length > 0) {
           return res.status(200).json({
             err: false,
@@ -157,14 +157,19 @@ class jobsController {
   }
 
   async getDetailsJobByStatusUser(req, res) {
-    const { status,code } = req.params;
-    if (status !== "" && status !== undefined && code !== "" && code !== undefined) {
+    const { status, code } = req.params;
+    if (
+      status !== "" &&
+      status !== undefined &&
+      code !== "" &&
+      code !== undefined
+    ) {
       const strQuery = FunctionInstance.getStringQueryUsers(status);
       if (strQuery !== undefined) {
         const pool = await sql.connect(sqlConfig);
         await pool
           .request()
-          .input('EmpCode',sql.NVarChar,code)
+          .input("EmpCode", sql.NVarChar, code)
           .query(`${strQuery}`)
           .then((result, err) => {
             if (err) {
@@ -302,7 +307,8 @@ class jobsController {
     const datetimeNow =
       moment().add(7, "hours").format("YYYY-MM-DD HH:mm:ss") + ".000"; // .z+7
 
-    const device1 = datetimeNow.split(" ")[1];
+    const datetimeNowClient = moment().format("YYYY-MM-DD HH:mm:ss") + ".000";
+    const device1 = datetimeNowClient.split(" ")[1];
 
     // ไม่มี Hrc_Data return ทันที
     if (!hrc_info) {
@@ -324,22 +330,11 @@ class jobsController {
         msg: "Error Genarate callNo!",
       });
     }
-
+    const dataHrc = JSON.parse(hrc_info); // Data ของ User ที่เข้าระบบ
     const dataState =
       codeUserAgent && codeUserAgent !== "" && codeUserAgent !== null
         ? await FunctionInstance.GetDataMailContactInfo(codeUserAgent)
         : "";
-
-    const dataHrc = JSON.parse(hrc_info); // Data ของ User ที่เข้าระบบ
-
-    if (dataState == null || dataState == false) {
-      // มีการส่งค่า Code User Agent แต่ไม่มีข้อมูลในระบบ GetDataMailContactInfo() จะ Return Null
-      return res.json({
-        err: true,
-        msg: "User is not founded!",
-        details: "ไม่พบข้อมูล Leader Code ในระบบ",
-      });
-    }
 
     const stringQuery = `INSERT INTO [DB_PSDHELPDESK].[dbo].[site_calls] ([call_subno],[call_subtitle],[call_first_name],[call_phone],[call_email],[call_department],[call_request],[call_device],[call_details],[call_status],[call_user],[call_device1],[call_device2],[call_device3],[call_problem_device],[call_uidvirus],[call_ip],[call_SourceGroupID],[call_Time1],[call_Time5]) 
       VALUES (@callSubno,@title,@fname,@phone,@email,@department,@callRequest,@callDevice,@details,@callStatus,@callUser,@device1,@device2,@device3,@deviceProblem,@uidVirus,@ip,@souceGroup,@time1,@time5)`;
@@ -352,6 +347,24 @@ class jobsController {
         const callDepartment = dataHrc.ESD_ShortDepartment;
         const callLeadercode = dataHrc.UHR_LeaderCode;
         const callFirstName = dataHrc.UHR_FullName_th;
+
+        if (images !== undefined && images.length > 0) {
+          const upload = await FunctionInstance.uploadFile(
+            images,
+            callSubno.callSubNo
+          );
+
+          if (!upload) {
+            
+            FunctionInstance.saveLogsAction(callSubno.callSubNo,'อัพโหลดรูปภาพไม่สำเร็จ','Upload',clientIP) // เก็บ Logs
+
+            return res.json({
+              err: true,
+              msg: "Error ! Upload files ",
+            });
+
+          }
+        }
 
         const insert = await pool
           .request()
@@ -381,21 +394,6 @@ class jobsController {
 
         // Upload File Binary เข้ารหัส Images Blob
 
-        if (images !== undefined && images.length > 0) {
-          console.log(images);
-          for (let i = 0; i < images.length; i++) {
-            const fileBuffer = images[i].buffer;
-            const contentType = images[i].mimetype;
-            const originalFileName = images[i].originalname;
-            const fileHex = `0x${fileBuffer.toString("hex")}`;
-            await pool
-              .request()
-              .query(
-                `INSERT INTO site_upload ([call_subno],[Name],[ContentType],[Data]) VALUES (${callSubno.callSubNo},${originalFileName},${contentType},${fileHex})`
-              );
-          }
-        }
-
         FunctionInstance.sendMail(
           callSubno.callSubNo,
           callEmail,
@@ -403,7 +401,8 @@ class jobsController {
           callUser,
           callLeadercode,
           title,
-          details
+          details,
+          clientIP
         );
 
         //Success !
@@ -411,6 +410,7 @@ class jobsController {
           err: false,
           msg: "Add job !",
           result: insert,
+          status:'Ok'
         });
       } catch (err) {
         console.log(images);
@@ -420,14 +420,35 @@ class jobsController {
         });
       }
     } else if (dataState !== "" && dataState && dataState?.length > 0) {
+      // แจ้งงานแทน
+
       try {
-        // แจ้งงานแทน
+
         const callUser = dataState[0].UHR_EmpCode;
         const callPhone = dataState[0].UHR_Phone;
         const callEmail = dataState[0].UHR_Email;
         const callDepartment = dataState[0].ESD_ShortDepartment;
         const callLeadercode = dataState[0].UHR_LeaderCode;
         const callFirstName = dataState[0].UHR_FullName_th;
+
+        if (images !== undefined && images.length > 0) {
+          // Upload File Binary เข้ารหัส Images Blob
+          const upload = await FunctionInstance.uploadFile(
+            images,
+            callSubno.callSubNo
+          );
+
+          if (!upload) {
+
+            FunctionInstance.saveLogsAction(callSubno.callSubNo,'อัพโหลดรูปภาพไม่สำเร็จ','Upload',clientIP) // เก็บ Logs
+
+            return res.json({
+              err: true,
+              msg: "Error ! Upload files ",
+            });
+
+          }
+        }
 
         const insert = await pool
           .request()
@@ -453,22 +474,6 @@ class jobsController {
           .input("time5", sql.DateTime, datetimeNow)
           .query(stringQuery);
 
-        // Upload File Binary เข้ารหัส Images Blob
-
-        if (images !== undefined && images.length > 0) {
-          for (let i = 0; i < images.length; i++) {
-            const fileBuffer = images[i].buffer;
-            const contentType = images[i].mimetype;
-            const originalFileName = images[i].originalname;
-            const fileHex = `0x${fileBuffer.toString("hex")}`;
-            await pool
-              .request()
-              .query(
-                `INSERT INTO site_upload ([call_subno],[Name],[ContentType],[Data]) VALUES (${callSubno.callSubNo},'${originalFileName}','${contentType}',${fileHex})`
-              );
-          }
-        }
-        console.log("แจ้งงานแทน");
         FunctionInstance.sendMail(
           callSubno.callSubNo,
           callEmail,
@@ -476,7 +481,8 @@ class jobsController {
           callUser,
           callLeadercode,
           title,
-          details
+          details,
+          clientIP
         );
         //Success !
         return res.json({
@@ -485,6 +491,7 @@ class jobsController {
           status: "Ok",
           result: insert,
         });
+        
       } catch (err) {
         console.log(err);
 
@@ -516,17 +523,14 @@ class jobsController {
         suggustion,
         reasonFollowUp,
         idCategory,
-        rank
-
+        rank,
       } = req.body;
       const pool = await sql.connect(sqlConfig);
 
       const result_job = await pool
         .request()
         .input("callSubNo", sql.Int, call_subno)
-        .query(
-          `SELECT * FROM [V_HDJobInfo] WHERE [call_subno] = @callSubNo`
-        );
+        .query(`SELECT * FROM [V_HDJobInfo] WHERE [call_subno] = @callSubNo`);
 
       if (result_job && result_job.recordset.length > 0) {
         const typeReply =
@@ -564,8 +568,18 @@ class jobsController {
           .input("analysis", sql.NVarChar, analysis)
           .input("Suggustion", sql.NVarChar, suggustion)
           .input("AboutFollowUp", sql.NVarChar, reasonFollowUp)
-          .input("date1", sql.DateTime, moment(dateTime1).add(7,'hours').format("YYYY-MM-DD HH:mm:ss") + ".000")
-        .input("date5", sql.DateTime, moment(dateTime5).add(7,'hours').format("YYYY-MM-DD HH:mm:ss") + ".000")
+          .input(
+            "date1",
+            sql.DateTime,
+            moment(dateTime1).add(7, "hours").format("YYYY-MM-DD HH:mm:ss") +
+              ".000"
+          )
+          .input(
+            "date5",
+            sql.DateTime,
+            moment(dateTime5).add(7, "hours").format("YYYY-MM-DD HH:mm:ss") +
+              ".000"
+          )
           .query(`UPDATE site_calls SET call_request = @callRequest,call_device = @callDevice,call_date2 = GETDATE(),
         call_status = @status,call_staff = @callStaff,call_reply = @typeReply,call_remark2 = @rank,
         call_remark3 = @followUp,call_remark4 = @analysis,call_remark5 = @Suggustion,call_remark6 = @AboutFollowUp,call_Time1 = @date1,call_Time5 = @date5 WHERE call_subno = @callSubNo`);
@@ -594,9 +608,7 @@ class jobsController {
         if (update && insertDetails && insertSolve) {
           return res.json({ err: false, msg: "Updated!", status: "Ok" });
         }
-        console.log(req.body);
-        // console.log(typeResponsible)
-        // console.log(typeResponsible),
+
       } else {
         return res.json({
           err: true,
@@ -604,7 +616,6 @@ class jobsController {
         });
       }
 
-      console.log(req.body);
     } catch (error) {
       console.log(error);
     }

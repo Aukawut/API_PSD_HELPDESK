@@ -61,23 +61,24 @@ class FunctionUtils {
     // Function Filter status
     switch (status) {
       case "New Jobs":
-        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDNewJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
+        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDNewJobs] WHERE [call_usercode] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
       case "Accept Jobs":
-        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDAcceptJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC,call_date DESC";
+        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDAcceptJobs] WHERE [call_usercode] = @EmpCode ORDER BY call_date2 DESC,call_date DESC";
       case "Finish Jobs":
-        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDFinishJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC,call_date DESC";
+        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDFinishJobs] WHERE [call_usercode] = @EmpCode ORDER BY call_date2 DESC,call_date DESC";
       case "Outside Jobs":
-        return "SELECT  [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDOutsideJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
+        return "SELECT  [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDOutsideJobs] WHERE [call_usercode] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
       case "Improve Jobs":
-        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDProjectJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
+        return "SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDProjectJobs] WHERE [call_usercode] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
       case "Close jobs":
-        return "SELECT  [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDCloseJobs] WHERE [call_user] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
+        return "SELECT  [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],[call_user],[call_staff],[call_status],[call_date2],[call_device] FROM [DB_PSDHELPDESK].[dbo].[V_HDCloseJobs] WHERE [call_usercode] = @EmpCode ORDER BY call_date2 DESC, call_date DESC";
       default:
         return undefined;
     }
   }
 
   async GetDataMailContactInfo(leaderCode) {
+    console.log("User" + leaderCode);
     try {
       const stmt = `SELECT * FROM ESV_HDUserStore WHERE [UHR_EmpCode] = @leaderCode`;
       const pool = await sql.connect(sqlConfig);
@@ -102,7 +103,8 @@ class FunctionUtils {
     callUser,
     callLeadercode,
     title,
-    details
+    details,
+    ip
   ) {
     const pool = await sql.connect(sqlConfig);
     const jobInfo = await pool
@@ -113,7 +115,6 @@ class FunctionUtils {
       );
 
     if (jobInfo && jobInfo.recordset.length > 0) {
-
       const leaderInfo = await pool
         .request()
         .input("empCode", sql.NVarChar, callLeadercode)
@@ -139,29 +140,104 @@ class FunctionUtils {
           : "";
       const GroupMailUser =
         groupInfo && groupInfo.recordset.length > 0
-          ? (groupInfo.recordset[0].ESD_Group_PSTH).toLowerCase()
+          ? groupInfo.recordset[0].ESD_Group_PSTH.toLowerCase()
           : "";
 
-      
       const payload = {
         Subject: `${appName} [* ${jobInfo.recordset[0]?.call_status} *] [#${jobInfo.recordset[0].call_subno}] ${title}`,
         Application: appName,
         To: UserEmail,
         Leader: LeaderEmail,
         Group: GroupMailUser,
-        CallSubNo:jobInfo.recordset[0].call_subno,
-        Status :jobInfo.recordset[0]?.call_status};
+        CallSubNo: jobInfo.recordset[0].call_subno,
+        Status: jobInfo.recordset[0]?.call_status,
+      };
+
+      // Function บันทึก Log
+      const saveLogs = async (type,msg,ip,callNo) => {
+        try {
+          await pool
+            .request()
+            .input("type", sql.NVarChar, type)
+            .input("msg", sql.NVarChar, msg)
+            .input("by", sql.NVarChar, ip)
+            .input("callNo", sql.NVarChar, callNo)
+            .query(
+              `INSERT INTO site_logs_action ([type_logs],[message],[client_ip],[call_subno]) 
+          VALUES (@type,@msg,@by,@callNo)`
+            )
+            .then((result, err) => {
+              if (err) {
+                console.log(err);
+              }
+            });
+        } catch (err) {
+          console.log(err);
+        }
+      }
 
       await axios
         .post("http://10.144.2.175:81/api/SendMail", payload)
-        .then((res) => {
+        .then(async(res) => {
+
+          if (res.data !== "Email sent successfully!") {
+            saveLogs('Send Email','ส่งอีเมลไม่สำเร็จ',ip,jobInfo.recordset[0].call_subno);
+          }
           console.log(res.data);
+
         })
         .catch((err) => {
           console.log(err);
+          saveLogs('Send Email','ส่งอีเมลไม่สำเร็จ',ip,jobInfo.recordset[0].call_subno)
         });
     } else {
       console.log("Not send!");
+    }
+  }
+
+  // Controller
+  async saveLogsAction(callSubNo, message, type_logs, ip) {
+    const pool = await sql.connect(sqlConfig);
+    try {
+      await pool
+        .request()
+        .input("type", sql.NVarChar, type_logs)
+        .input("msg", sql.NVarChar, message)
+        .input("by", sql.NVarChar, ip)
+        .input("callNo", sql.NVarChar, callSubNo)
+        .query(
+          `INSERT INTO site_logs_action ([type_logs],[message],[client_ip],[call_subno]) 
+      VALUES (@type,@msg,@by,@callNo)`
+        )
+        .then((result, err) => {
+          if (err) {
+            console.log(err);
+          }
+        });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async uploadFile(images, callSubNo) {
+    const pool = await sql.connect(sqlConfig);
+
+    try {
+      for (let i = 0; i < images.length; i++) {
+        const fileBuffer = images[i].buffer;
+        const contentType = images[i].mimetype;
+        const originalFileName = images[i].originalname;
+        const fileHex = `0x${fileBuffer.toString("hex")}`;
+        await pool
+          .request()
+          .query(
+            `INSERT INTO site_upload ([call_subno],[Name],[ContentType],[Data]) VALUES (${callSubNo},'${originalFileName}','${contentType}',${fileHex})`
+          );
+      }
+      return true;
+    } catch (err) {
+      console.log(err);
+      return false;
     }
   }
 }
