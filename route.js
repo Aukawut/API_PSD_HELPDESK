@@ -124,6 +124,7 @@ app.get('/data/topfiveMcRequest',jwtMiddlewareInstance.adminAuthenticateJWT,Dash
 app.post('/data/dataOverdueByDays',jwtMiddlewareInstance.adminAuthenticateJWT,DashoboardInstance.dataOverdueByDays)
 app.get('/data/summary/:year',jwtMiddlewareInstance.adminAuthenticateJWT,DashoboardInstance.dataSummaryPerMonthYear)
 app.get('/data/menuYear',jwtMiddlewareInstance.adminAuthenticateJWT,DashoboardInstance.getMenuYear)
+app.get('/report/machineHistory/:dateFrom/:dateTo',jwtMiddlewareInstance.adminAuthenticateJWT,DashoboardInstance.getMachineHistory)
 
 //Image
 app.get('/images/:call_no',jwtMiddlewareInstance.authenticateJWT,ImageInstance.index)

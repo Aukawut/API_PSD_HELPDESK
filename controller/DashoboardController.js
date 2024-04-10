@@ -177,6 +177,38 @@ class DashoboardController {
       });
     }
   }
+
+  async getMachineHistory(req, res) {
+    try {
+      const {dateFrom,dateTo} = req.params ;
+
+      const pool = await sql.connect(sqlConfig);
+      const result = await pool
+        .request()
+        .query(
+          `SELECT [call_id],[call_subno],[call_date],[call_subtitle],[call_details],[call_request],[call_device],[call_user],[call_problem_device],[site_factory],[call_date2],[call_status],[call_staff] FROM [dbo].[V_HDSummaryMachineInfo_Final]
+          WHERE call_date between '${dateFrom} 00:00:00' and '${dateTo} 23:59:59' 
+          ORDER BY [call_subno] DESC`
+        );
+      if (result && result.recordset?.length > 0) {
+        return res.json({
+          err: false,
+          result: result.recordset,
+          status:"Ok"
+        });
+      } else {
+        return res.json({
+          err: true,
+          msg: "Not Founded!",
+        });
+      }
+    } catch (err) {
+      return res.json({
+        err: true,
+        msg: err,
+      });
+    }
+  }
 }
 
 module.exports = DashoboardController;
