@@ -341,12 +341,12 @@ class jobsController {
     if (dataState == "" && !codeUserAgent) {
       // ไม่มีการส่งค่า Code User Agent
       try {
-        const callUser = dataHrc.UHR_EmpCode;
-        const callPhone = dataHrc.UHR_Phone;
-        const callEmail = dataHrc.UHR_Email;
-        const callDepartment = dataHrc.ESD_ShortDepartment;
-        const callLeadercode = dataHrc.UHR_LeaderCode;
-        const callFirstName = dataHrc.UHR_FullName_th;
+        const callUser = dataHrc.UHR_EmpCode == "" || dataHrc.UHR_EmpCode == null ? "-":dataHrc.UHR_EmpCode;
+        const callPhone = dataHrc.UHR_Phone == "" || dataHrc.UHR_Phone == null ? "-" :dataHrc.UHR_Phone;
+        const callEmail = dataHrc.UHR_Email == "" || dataHrc.UHR_Email == null ? "-" :dataHrc.UHR_Email;
+        const callDepartment = dataHrc.ESD_ShortDepartment == "" || dataHrc.ESD_ShortDepartment == null ? "-" :dataHrc.ESD_ShortDepartment;
+        const callLeadercode = dataHrc.UHR_LeaderCode == "" || dataHrc.UHR_LeaderCode == null ? "-":dataHrc.UHR_LeaderCode;
+        const callFirstName = dataHrc.UHR_FullName_th == "" || dataHrc.UHR_FullName_th == null ? "-" :dataHrc.UHR_FullName_th;
 
         if (images !== undefined && images.length > 0) {
           const upload = await FunctionInstance.uploadFile(
@@ -355,14 +355,17 @@ class jobsController {
           );
 
           if (!upload) {
-            
-            FunctionInstance.saveLogsAction(callSubno.callSubNo,'อัพโหลดรูปภาพไม่สำเร็จ','Upload',clientIP) // เก็บ Logs
+            FunctionInstance.saveLogsAction(
+              callSubno.callSubNo,
+              "อัพโหลดรูปภาพไม่สำเร็จ",
+              "Upload",
+              clientIP
+            ); // เก็บ Logs
 
             return res.json({
               err: true,
               msg: "Error ! Upload files ",
             });
-
           }
         }
 
@@ -410,7 +413,7 @@ class jobsController {
           err: false,
           msg: "Add job !",
           result: insert,
-          status:'Ok'
+          status: "Ok",
         });
       } catch (err) {
         console.log(images);
@@ -423,33 +426,45 @@ class jobsController {
       // แจ้งงานแทน
 
       try {
+        const callUser =
+          dataState[0].UHR_EmpCode == null ? "-" : dataState[0].UHR_EmpCode;
+        const callPhone =
+          dataState[0].UHR_Phone == null ? "-" : dataState[0].UHR_Phone;
+        const callEmail =
+          dataState[0]?.UHR_Email == null ? "-" : dataState[0]?.UHR_Email;
+        const callDepartment =
+          dataState[0].ESD_ShortDepartment == null
+            ? "-"
+            : dataState[0].ESD_ShortDepartment;
+        const callLeadercode =
+          dataState[0].UHR_LeaderCode == null
+            ? "-"
+            : dataState[0].UHR_LeaderCode;
+        const callFirstName =
+          dataState[0].UHR_FullName_th == null
+            ? "-"
+            : dataState[0].UHR_FullName_th;
 
-        const callUser = dataState[0].UHR_EmpCode;
-        const callPhone = dataState[0].UHR_Phone;
-        const callEmail = dataState[0].UHR_Email;
-        const callDepartment = dataState[0].ESD_ShortDepartment;
-        const callLeadercode = dataState[0].UHR_LeaderCode;
-        const callFirstName = dataState[0].UHR_FullName_th;
-
+           
         if (images !== undefined && images.length > 0) {
           // Upload File Binary เข้ารหัส Images Blob
           const upload = await FunctionInstance.uploadFile(
             images,
             callSubno.callSubNo
           );
-
+  
           if (!upload) {
-
+  
             FunctionInstance.saveLogsAction(callSubno.callSubNo,'อัพโหลดรูปภาพไม่สำเร็จ','Upload',clientIP) // เก็บ Logs
-
+  
             return res.json({
               err: true,
               msg: "Error ! Upload files ",
             });
-
+  
           }
         }
-
+  
         const insert = await pool
           .request()
           .input("callSubno", sql.NVarChar, callSubno.callSubNo)
@@ -473,8 +488,9 @@ class jobsController {
           .input("time1", sql.DateTime, datetimeNow)
           .input("time5", sql.DateTime, datetimeNow)
           .query(stringQuery);
-
-        FunctionInstance.sendMail(
+  
+        // ส่งอีเมล
+          FunctionInstance.sendMail(
           callSubno.callSubNo,
           callEmail,
           "PSD Helpdesk System",
@@ -484,7 +500,8 @@ class jobsController {
           details,
           clientIP
         );
-        //Success !
+
+        // ส่ง Response Json to client !
         return res.json({
           err: false,
           msg: "Add job !",
@@ -493,12 +510,10 @@ class jobsController {
         });
         
       } catch (err) {
-        console.log(err);
-
+        console.log(images);
         return res.json({
           err: true,
           msg: err,
-          datetimeNow,
         });
       }
     }
@@ -608,14 +623,12 @@ class jobsController {
         if (update && insertDetails && insertSolve) {
           return res.json({ err: false, msg: "Updated!", status: "Ok" });
         }
-
       } else {
         return res.json({
           err: true,
           msg: "Job is not founded!",
         });
       }
-
     } catch (error) {
       console.log(error);
     }

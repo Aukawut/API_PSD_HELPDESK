@@ -136,11 +136,11 @@ class FunctionUtils {
           : "";
       const UserEmail =
         jobInfo && jobInfo.recordset.length > 0
-          ? jobInfo.recordset[0].UHR_email
+          ? jobInfo.recordset[0]?.UHR_email
           : "";
       const GroupMailUser =
         groupInfo && groupInfo.recordset.length > 0
-          ? groupInfo.recordset[0].ESD_Group_PSTH.toLowerCase()
+          ? groupInfo.recordset[0].ESD_Group_PSTH?.toLowerCase()
           : "";
 
       const payload = {
@@ -175,7 +175,7 @@ class FunctionUtils {
           console.log(err);
         }
       }
-
+  // http://10.144.2.175:81/api/SendMail
       await axios
         .post("http://10.144.2.175:81/api/SendMail", payload)
         .then(async(res) => {
