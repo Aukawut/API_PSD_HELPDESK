@@ -76,20 +76,20 @@ app.get('/jobs/informationUser/:status/:code',jwtMiddlewareInstance.authenticate
 app.get('/jobs/details/call/:callNo/:callId',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getDetailsJobByCallNo)
 app.get('/jobs/info/:id',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getInfoJobByCallId)
 app.put('/job/update/:call_subno',jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.updateJob)
-app.get('/job/solve/:subNo',jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.getSolve)
-app.get('/job/comment/:subNo',jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.getCommentDetails)
+app.get('/job/solve/:subNo',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getSolve)
+app.get('/job/comment/:subNo',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getCommentDetails)
 app.get('/user/dashboardUser/:code',jwtMiddlewareInstance.authenticateJWT,jobsInstance.countJobsUser)
 
 // Job Type 
-app.get('/jobType',jwtMiddlewareInstance.adminAuthenticateJWT,jobTypeInstance.getJobsType)
-app.get('/followUpList',jwtMiddlewareInstance.adminAuthenticateJWT,jobTypeInstance.getFollowUpList)
+app.get('/jobType',jwtMiddlewareInstance.authenticateJWT,jobTypeInstance.getJobsType)
+app.get('/followUpList',jwtMiddlewareInstance.authenticateJWT,jobTypeInstance.getFollowUpList)
 
 // Status Type
-app.get('/statusList',jwtMiddlewareInstance.adminAuthenticateJWT,StatusInstance.getListsStatus)
+app.get('/statusList',jwtMiddlewareInstance.authenticateJWT,StatusInstance.getListsStatus)
 
 
 // Rank 
-app.get('/rank',jwtMiddlewareInstance.adminAuthenticateJWT,RankInstance.getRank)
+app.get('/rank',jwtMiddlewareInstance.authenticateJWT,RankInstance.getRank)
 
 // Factory Route
 app.get('/factory',jwtMiddlewareInstance.authenticateJWT,factoryInstance.index);
@@ -117,7 +117,7 @@ app.delete("/process/delete/:id",jwtMiddlewareInstance.adminAuthenticateJWT,proc
 app.post("/process/del/multiple",jwtMiddlewareInstance.adminAuthenticateJWT,processInstance.deleteMultipleProcess)
 
 // Contact Route 
-app.get('/contact',jwtMiddlewareInstance.adminAuthenticateJWT,ContactInstance.getContact)
+app.get('/contact',jwtMiddlewareInstance.authenticateJWT,ContactInstance.getContact)
 
 //Dashboard Route 
 app.get('/data/topfiveMcRequest',jwtMiddlewareInstance.adminAuthenticateJWT,DashoboardInstance.getTop5MachineRequest)
