@@ -2,6 +2,10 @@ const { sql, sqlConfig } = require("../config/connectDB");
 const axios = require("axios");
 
 class FunctionUtils {
+
+ 
+
+
   async getLastCallNo() {
     try {
       const pool = await sql.connect(sqlConfig);
@@ -175,6 +179,10 @@ class FunctionUtils {
           console.log(err);
         }
       }
+
+
+        
+
   // http://10.144.2.175:81/api/SendMail
       await axios
         .post("http://10.144.2.175:81/api/SendMail", payload)
