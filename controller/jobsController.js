@@ -397,16 +397,16 @@ class jobsController {
 
         // Upload File Binary เข้ารหัส Images Blob
 
-        FunctionInstance.sendMail(
-          callSubno.callSubNo,
-          callEmail,
-          "PSD Helpdesk System",
-          callUser,
-          callLeadercode,
-          title,
-          details,
-          clientIP
-        );
+        // FunctionInstance.sendMail(
+        //   callSubno.callSubNo,
+        //   callEmail,
+        //   "PSD Helpdesk System",
+        //   callUser,
+        //   callLeadercode,
+        //   title,
+        //   details,
+        //   clientIP
+        // );
 
         //Success !
         return res.json({
