@@ -184,20 +184,20 @@ class FunctionUtils {
         
 
   // http://10.144.2.175:81/api/SendMail
-      await axios
-        .post("http://10.144.2.175:81/api/SendMail", payload)
-        .then(async(res) => {
+      // await axios
+      //   .post("http://10.144.2.175:81/api/SendMail", payload)
+      //   .then(async(res) => {
 
-          if (res.data !== "Email sent successfully!") {
-            saveLogs('Send Email','ส่งอีเมลไม่สำเร็จ',ip,jobInfo.recordset[0].call_subno);
-          }
-          console.log(res.data);
+      //     if (res.data !== "Email sent successfully!") {
+      //       saveLogs('Send Email','ส่งอีเมลไม่สำเร็จ',ip,jobInfo.recordset[0].call_subno);
+      //     }
+      //     console.log(res.data);
 
-        })
-        .catch((err) => {
-          console.log(err);
-          saveLogs('Send Email','ส่งอีเมลไม่สำเร็จ',ip,jobInfo.recordset[0].call_subno)
-        });
+      //   })
+      //   .catch((err) => {
+      //     console.log(err);
+      //     saveLogs('Send Email','ส่งอีเมลไม่สำเร็จ',ip,jobInfo.recordset[0].call_subno)
+      //   });
     } else {
       console.log("Not send!");
     }
