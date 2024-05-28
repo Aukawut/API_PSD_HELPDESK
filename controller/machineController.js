@@ -2,7 +2,7 @@ const { sql, sqlConfig } = require("../config/connectDB");
 
 class machineController {
   async index(req, res) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(
@@ -38,7 +38,7 @@ class machineController {
   }
 
   async machineList(req, res) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(
@@ -84,7 +84,7 @@ class machineController {
         msg: "Error params!",
       });
     }
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .input("factory", sql.NVarChar, factory)
@@ -130,7 +130,7 @@ class machineController {
         msg: "Error params!",
       });
     }
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .input("mcName", sql.NVarChar, mc_code)
@@ -180,7 +180,7 @@ class machineController {
     }
 
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const resultCheck = await pool
         .request()
         .input("mcCode", sql.NVarChar, code)
@@ -232,7 +232,7 @@ class machineController {
     }
 
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const resultCheck = await pool
         .request()
         .input("mcCode", sql.NVarChar, code)
@@ -281,7 +281,7 @@ class machineController {
         msg: "Params error!",
       });
     }
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .input("id", sql.Int, id)
@@ -314,7 +314,7 @@ class machineController {
     if (id && id.length > 0) {
       const idMachine = id.join(",");
       const query = `DELETE FROM site_machinemaster_update WHERE site_mcid IN (${idMachine})`;
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       await pool
         .request()
         .query(query)

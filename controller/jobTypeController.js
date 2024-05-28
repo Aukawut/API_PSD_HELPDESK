@@ -1,7 +1,7 @@
 const { sql, sqlConfig } = require("../config/connectDB");
 class jobTypeController {
   async getJobsType(req, res) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(
@@ -37,7 +37,7 @@ class jobTypeController {
       });
   }
   async getFollowUpList(req, res) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(

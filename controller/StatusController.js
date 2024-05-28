@@ -4,7 +4,7 @@ class StatusController {
   async getListsStatus(rqe, res) {
     const q = `SELECT type_id,type_name+'('+type_name_en+')' AS type_name FROM [DB_PSDHELPDESK].[dbo].[V_HDStatus]`;
 
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(`${q}`)

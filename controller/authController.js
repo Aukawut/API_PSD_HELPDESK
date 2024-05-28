@@ -10,7 +10,7 @@ class authController {
         msg: "Please completed information!",
       });
     }
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .input("username", sql.NVarChar, username)

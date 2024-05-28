@@ -8,7 +8,7 @@ class FunctionUtils {
 
   async getLastCallNo() {
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const result = await pool
         .request()
         .query(
@@ -85,7 +85,7 @@ class FunctionUtils {
     console.log("User" + leaderCode);
     try {
       const stmt = `SELECT * FROM ESV_HDUserStore WHERE [UHR_EmpCode] = @leaderCode`;
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const result = await pool
         .request()
         .input("leaderCode", sql.NVarChar, leaderCode)
@@ -110,7 +110,7 @@ class FunctionUtils {
     details,
     ip
   ) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     const jobInfo = await pool
       .request()
       .input("callSubNo", sql.NVarChar, callSubno)
@@ -205,7 +205,7 @@ class FunctionUtils {
 
   // Controller
   async saveLogsAction(callSubNo, message, type_logs, ip) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     try {
       await pool
         .request()
@@ -228,7 +228,7 @@ class FunctionUtils {
   }
 
   async uploadFile(images, callSubNo) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
 
     try {
       for (let i = 0; i < images.length; i++) {

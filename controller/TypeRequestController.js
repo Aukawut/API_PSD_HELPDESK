@@ -2,7 +2,7 @@ const { sql, sqlConfig } = require("../config/connectDB");
 
 class TypeRequestController {
   index = async (req, res) => {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(
@@ -29,7 +29,7 @@ class TypeRequestController {
   };
 
   async getAllRequestTypes(req, res) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(
@@ -61,7 +61,7 @@ class TypeRequestController {
 
   async addRequestType(req, res) {
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
 
       const type = "8"; // 8 คือ type ที่อยู่บนตาราง site_types ใช้แบ่ง Group
 
@@ -106,7 +106,7 @@ class TypeRequestController {
     if (!id) {
       return res.json({ err: true, msg: "Error id" });
     }
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .input("id", sql.Int, id)
@@ -140,7 +140,7 @@ class TypeRequestController {
     if (id && id.length > 0) {
       const idType = id.join(",");
       const query = `DELETE FROM site_types WHERE type_id IN (${idType})`;
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       await pool
         .request()
         .query(query)
@@ -176,7 +176,7 @@ class TypeRequestController {
 
   async updateRequestType(req, res) {
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const { id } = req.params;
       const { type_name, type_name_en, type_desc, status, empCode } = req.body;
       if (!type_name || !type_name_en || !status || !empCode) {

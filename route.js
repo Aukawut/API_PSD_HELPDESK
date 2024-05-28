@@ -70,7 +70,7 @@ app.put('/category/update/:id',jwtMiddlewareInstance.adminAuthenticateJWT,catego
 // Job Request Route
 app.post("/jobs/add",FileUploadInstance.fileUploadMiddleware,jobsInstance.addJob);
 app.get("/jobs/count/admin",jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.countJobs);
-app.get("/jobs/jobByFactory",jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.getTopFiveFactoryRequest);
+// app.get("/jobs/jobByFactory",jwtMiddlewareInstance.adminAuthenticateJWT,jobsInstance.getTopFiveFactoryRequest);
 app.get('/jobs/information/:status',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getDetailsJobByStatus)
 app.get('/jobs/informationUser/:status/:code',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getDetailsJobByStatusUser)
 app.get('/jobs/details/call/:callNo/:callId',jwtMiddlewareInstance.authenticateJWT,jobsInstance.getDetailsJobByCallNo)
@@ -130,7 +130,7 @@ app.get('/report/machineHistory/:dateFrom/:dateTo',jwtMiddlewareInstance.adminAu
 app.get('/images/:call_no',jwtMiddlewareInstance.authenticateJWT,ImageInstance.index)
 
 // auth Route
-app.post("/auth/login", authInstance.login);
+// app.post("/auth/login", authInstance.login);
 app.get("/auth/token", authInstance.authenticateJWT);
 
 

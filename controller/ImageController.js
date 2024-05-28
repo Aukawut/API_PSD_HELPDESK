@@ -3,7 +3,7 @@ const { sql, sqlConfig } = require("../config/connectDB");
 class ImageController {
   async index(req, res) {
     const callNo = req.params.call_no;
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .input('call_no', sql.NVarChar, callNo)

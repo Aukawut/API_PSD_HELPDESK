@@ -3,7 +3,7 @@ const { sql, sqlConfig } = require("../config/connectDB");
 class DashoboardController {
   async getTop5MachineRequest(req, res) {
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const result = await pool.request().query(
         `WITH CTE_C AS (SELECT TOP 5 COUNT (*) AS AMOUNT_SUM,call_device3 
         FROM [dbo].[V_HDALLJobs] GROUP BY call_device3)
@@ -13,17 +13,20 @@ class DashoboardController {
     ON CTE_C.call_device3 = m.[site_mccode]`
       );
       if (result && result.recordset?.length > 0) {
+        pool.close() ;
         return res.json({
           err: false,
           result: result.recordset,
         });
       } else {
+        pool.close() ;
         return res.json({
           err: true,
           msg: "Not Founded!",
         });
       }
     } catch (err) {
+      console.log(err);
       return res.json({
         err: true,
         msg: err,
@@ -37,7 +40,7 @@ class DashoboardController {
       day = -30; // Or whatever default value you want
     }
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const result = await pool.request().query(
         `WITH CTE_OVERDUE AS (
                 SELECT 
@@ -78,17 +81,20 @@ class DashoboardController {
                 a.ConvertedDate ASC`
       );
       if (result && result.recordset?.length > 0) {
+        pool.close() ;
         return res.json({
           err: false,
           result: result.recordset,
         });
       } else {
+        pool.close() ;
         return res.json({
           err: true,
           msg: "Not Founded!",
         });
       }
     } catch (err) {
+      console.log(err);
       return res.json({
         err: true,
         msg: err,
@@ -98,7 +104,7 @@ class DashoboardController {
   async dataSummaryPerMonthYear(req, res) {
     const { year } = req.params;
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const result = await pool.request().input("year", sql.Int, year)
         .query(`WITH MonthNumbers AS (
         SELECT 1 AS month_n
@@ -134,17 +140,20 @@ class DashoboardController {
         [V_Summary_Final] f ON f.month_n = MonthNumbers.month_n AND f.year_ = @year`);
 
       if (result && result.recordset?.length > 0) {
+        pool.close();
         return res.json({
           err: false,
           result: result.recordset,
         });
       } else {
+        pool.close();
         return res.json({
           err: true,
           msg: "Not Founded!",
         });
       }
     } catch (err) {
+      console.log(err);
       return res.json({
         err: true,
         msg: err,
@@ -153,24 +162,27 @@ class DashoboardController {
   }
   async getMenuYear(req, res) {
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const result = await pool
         .request()
         .query(
           `SELECT COUNT (*) as amount_,[year_] FROM [dbo].[V_Summary_Final] GROUP BY [year_] ORDER BY year_ DESC`
         );
       if (result && result.recordset?.length > 0) {
+        pool.close();
         return res.json({
           err: false,
           result: result.recordset,
         });
       } else {
+        pool.close();
         return res.json({
           err: true,
           msg: "Not Founded!",
         });
       }
     } catch (err) {
+      console.log(err);
       return res.json({
         err: true,
         msg: err,
@@ -180,29 +192,30 @@ class DashoboardController {
 
   async getMachineHistory(req, res) {
     try {
-      const {dateFrom,dateTo} = req.params ;
+      const { dateFrom, dateTo } = req.params;
 
-      const pool = await sql.connect(sqlConfig);
-      const result = await pool
-        .request()
-        .query(
-          `SELECT [call_id],[call_subno],[call_date],[call_subtitle],[call_details],[call_request],[call_device],[call_user],[call_problem_device],[site_factory],[call_date2],[call_status],[call_staff] FROM [dbo].[V_HDSummaryMachineInfo_Final]
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
+      const result = await pool.request().query(
+        `SELECT [call_id],[call_subno],[call_date],[call_subtitle],[call_details],[call_request],[call_device],[call_user],[call_problem_device],[site_factory],[call_date2],[call_status],[call_staff] FROM [dbo].[V_HDSummaryMachineInfo_Final]
           WHERE call_date between '${dateFrom} 00:00:00' and '${dateTo} 23:59:59' 
           ORDER BY [call_subno] DESC`
-        );
+      );
       if (result && result.recordset?.length > 0) {
+        pool.close();
         return res.json({
           err: false,
           result: result.recordset,
-          status:"Ok"
+          status: "Ok",
         });
       } else {
+        pool.close();
         return res.json({
           err: true,
           msg: "Not Founded!",
         });
       }
     } catch (err) {
+      console.log(err);
       return res.json({
         err: true,
         msg: err,

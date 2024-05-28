@@ -2,7 +2,7 @@ const { sql, sqlConfig } = require("../config/connectDB");
 
 class factoryController {
   async index(req, res) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(
@@ -45,7 +45,7 @@ class factoryController {
       });
   }
   async getFactory(req, res) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(`SELECT * FROM [dbo].[site_factory] ORDER BY sf_ID DESC`)
@@ -84,7 +84,7 @@ class factoryController {
     if (!id || id == undefined) {
       return res.json({ err: true, msg: "Error id" });
     }
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .input("id", sql.Int, id)
@@ -117,7 +117,7 @@ class factoryController {
     if (id && id.length > 0) {
       const idFactory = id.join(",");
       const query = `DELETE FROM site_factory WHERE sf_ID IN (${idFactory})`;
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       await pool
         .request()
         .query(query)
@@ -159,7 +159,7 @@ class factoryController {
     }
 
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       // Check if factory code already exists
       const existingFactory = await pool
         .request()
@@ -207,7 +207,7 @@ class factoryController {
     if (!id || !code || !name  || !empCode || !status) {
       return res.json({ err: true, msg: "Error payload" });
     }
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     try {
       // Check if factory code already exists
       const existingFactory = await pool

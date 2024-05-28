@@ -8,7 +8,7 @@ const FunctionInstance = new FunctionUtils();
 
 class jobsController {
   async countJobs(req, res) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(`SELECT * FROM [dbo].[V_CountJob_DashboardAdmin]`)
@@ -21,6 +21,7 @@ class jobsController {
           });
         }
         if (result.recordset && result.recordset.length > 0) {
+          pool.close() ;
           return res.status(200).json({
             err: false,
             result: result.recordset,
@@ -43,7 +44,7 @@ class jobsController {
   }
   async countJobsUser(req, res) {
     const empCode = req.params.code;
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(`EXEC [dbo].[SP_GetJobCountsForEmployee] @empCode = '${empCode}'`)
@@ -57,12 +58,14 @@ class jobsController {
         }
 
         if (result.recordset && result.recordset.length > 0) {
+          pool.close() ;
           return res.status(200).json({
             err: false,
             result: result.recordset,
             status: "Ok",
           });
         } else {
+          pool.close() ;
           return res.json({
             err: true,
             msg: "Something went wrong!",
@@ -79,7 +82,7 @@ class jobsController {
   }
 
   async getTopFiveFactoryRequest(req, res) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(
@@ -120,7 +123,7 @@ class jobsController {
     if (status !== "" && status !== undefined) {
       const strQuery = FunctionInstance.getStringQuery(status);
       if (strQuery !== undefined) {
-        const pool = await sql.connect(sqlConfig);
+        const pool = await new sql.ConnectionPool(sqlConfig).connect();
         await pool
           .request()
           .query(`${strQuery}`)
@@ -166,7 +169,7 @@ class jobsController {
     ) {
       const strQuery = FunctionInstance.getStringQueryUsers(status);
       if (strQuery !== undefined) {
-        const pool = await sql.connect(sqlConfig);
+        const pool = await new sql.ConnectionPool(sqlConfig).connect();
         await pool
           .request()
           .input("EmpCode", sql.NVarChar, code)
@@ -211,7 +214,7 @@ class jobsController {
       callNo !== undefined &&
       callId !== undefined
     ) {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       await pool
         .request()
         .input("callId", sql.Int, callId)
@@ -247,7 +250,7 @@ class jobsController {
   async getInfoJobByCallId(req, res) {
     const { id } = req.params;
     if (id !== "" && id !== undefined) {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       await pool
         .request()
         .input("id", sql.Int, parseInt(id))
@@ -301,7 +304,7 @@ class jobsController {
 
     const images = req.files.images; // ไฟล์แนบ
     const clientIP = IP.address();
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
 
     //Time for stop-start breakdown
     const datetimeNow =
@@ -540,7 +543,7 @@ class jobsController {
         idCategory,
         rank,
       } = req.body;
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
 
       const result_job = await pool
         .request()
@@ -569,7 +572,7 @@ class jobsController {
             ? "เปลี่ยนแปลงสถานะงาน"
             : details;
 
-        const pool = await sql.connect(sqlConfig);
+        const pool = await new sql.ConnectionPool(sqlConfig).connect();
         const update = await pool
           .request()
           .input("callRequest", sql.Int, jobType)
@@ -638,7 +641,7 @@ class jobsController {
     const { subNo } = req.params;
     if (subNo !== "" && subNo !== undefined) {
       try {
-        const pool = await sql.connect(sqlConfig);
+        const pool = await new sql.ConnectionPool(sqlConfig).connect();
 
         const result_job = await pool
           .request()
@@ -666,7 +669,7 @@ class jobsController {
     const { subNo } = req.params;
     if (subNo !== "" && subNo !== undefined) {
       try {
-        const pool = await sql.connect(sqlConfig);
+        const pool = await new sql.ConnectionPool(sqlConfig).connect();
 
         const result_job = await pool
           .request()

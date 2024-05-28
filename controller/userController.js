@@ -2,7 +2,7 @@ const { sql, sqlConfig } = require("../config/connectDB");
 
 class userController {
   index = async (req, res) => {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(

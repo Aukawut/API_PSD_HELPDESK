@@ -2,7 +2,7 @@ const { sql, sqlConfig } = require("../config/connectDB");
 
 class categoryController {
   index = async (req, res) => {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(
@@ -33,7 +33,7 @@ class categoryController {
   };
 
   async addCategory(req, res) {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     const cgType = "3"; // 3 คือ Group ของ Category ระบบ PSD Helpdesk
     const { cgName, cgNameEn, cgDesc, empCode, status } = req.body; //รับ Body Json จาก Client
     if (!cgName || !cgNameEn  || !empCode || !status) {
@@ -85,7 +85,7 @@ class categoryController {
     if (!id) {
       return res.json({ err: true, msg: "Error id" });
     }
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .input("id", sql.Int, id)
@@ -119,7 +119,7 @@ class categoryController {
     if (id && id.length > 0) {
       const idCategory = id.join(",");
       const query = `DELETE FROM site_categorygroup WHERE CG_ID IN (${idCategory})`;
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       await pool
         .request()
         .query(query)
@@ -155,7 +155,7 @@ class categoryController {
 
   async updateCategory(req, res) {
     const { id } = req.params;
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     const { cgName, cgNameEn, cgDesc, empCode, status } = req.body; //รับ Body Json จาก Client
     if (!cgName || !cgNameEn  || !empCode || !status || !id) {
       return res.json({

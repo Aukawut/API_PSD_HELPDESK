@@ -2,7 +2,7 @@ const { sql, sqlConfig } = require("../config/connectDB");
 
 class processController {
   index = async (req, res) => {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await new sql.ConnectionPool(sqlConfig).connect();
     await pool
       .request()
       .query(`SELECT * FROM [dbo].[site_process] ORDER BY id_process ASC`)
@@ -33,7 +33,7 @@ class processController {
     }
 
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const insert = await pool
         .request()
         .input("name", sql.NVarChar, name_process.trim())
@@ -66,7 +66,7 @@ class processController {
       return res.json({ err: true, msg: "Error payload" });
     }
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const update = await pool
         .request()
         .input("name", sql.NVarChar, name_process.trim())
@@ -100,7 +100,7 @@ class processController {
     }
 
     try {
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       const deleteProcess = await pool
         .request()
         .input("id", sql.Int, id)
@@ -125,7 +125,7 @@ class processController {
     if (id && id.length > 0) {
       const idProcess = id.join(",");
       const query = `DELETE FROM site_process WHERE id_process IN (${idProcess})`;
-      const pool = await sql.connect(sqlConfig);
+      const pool = await new sql.ConnectionPool(sqlConfig).connect();
       await pool
         .request()
         .query(query)
