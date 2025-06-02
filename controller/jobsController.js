@@ -334,9 +334,7 @@ class jobsController {
       });
     }
     const dataHrc = JSON.parse(hrc_info); // Data ของ User ที่เข้าระบบ
-    const dataState =
-      codeUserAgent && codeUserAgent !== "" && codeUserAgent !== null
-        ? await FunctionInstance.GetDataMailContactInfo(codeUserAgent)
+    const dataState = codeUserAgent && codeUserAgent !== "" && codeUserAgent !== null ? await FunctionInstance.GetDataMailContactInfo(codeUserAgent)
         : "";
 
     const stringQuery = `INSERT INTO [DB_PSDHELPDESK].[dbo].[site_calls] ([call_subno],[call_subtitle],[call_first_name],[call_phone],[call_email],[call_department],[call_request],[call_device],[call_details],[call_status],[call_user],[call_device1],[call_device2],[call_device3],[call_problem_device],[call_uidvirus],[call_ip],[call_SourceGroupID],[call_Time1],[call_Time5]) 
@@ -344,10 +342,10 @@ class jobsController {
     if (dataState == "" && !codeUserAgent) {
       // ไม่มีการส่งค่า Code User Agent
       try {
-        const callUser = dataHrc.UHR_EmpCode == "" || dataHrc.UHR_EmpCode == null ? "-":dataHrc.UHR_EmpCode;
-        const callPhone = dataHrc.UHR_Phone == "" || dataHrc.UHR_Phone == null ? "-" :dataHrc.UHR_Phone;
-        const callEmail = dataHrc.UHR_Email == "" || dataHrc.UHR_Email == null ? "-" :dataHrc.UHR_Email;
-        const callDepartment = dataHrc.ESD_ShortDepartment == "" || dataHrc.ESD_ShortDepartment == null ? "-" :dataHrc.ESD_ShortDepartment;
+        const callUser = dataHrc.UHR_EmpCode == "" || dataHrc.UHR_EmpCode == null ? "-": dataHrc.UHR_EmpCode;
+        const callPhone = dataHrc.UHR_Phone == "" || dataHrc.UHR_Phone == null ? "-" : dataHrc.UHR_Phone;
+        const callEmail = dataHrc.UHR_Email == "" || dataHrc.UHR_Email == null ? "-" : dataHrc.UHR_Email;
+        const callDepartment = dataHrc.UHR_Department == "" || dataHrc.UHR_Department == null ? "-" : dataHrc.UHR_Department;
         const callLeadercode = dataHrc.UHR_LeaderCode == "" || dataHrc.UHR_LeaderCode == null ? "-":dataHrc.UHR_LeaderCode;
         const callFirstName = dataHrc.UHR_FullName_th == "" || dataHrc.UHR_FullName_th == null ? "-" :dataHrc.UHR_FullName_th;
 
@@ -436,9 +434,9 @@ class jobsController {
         const callEmail =
           dataState[0]?.UHR_Email == null ? "-" : dataState[0]?.UHR_Email;
         const callDepartment =
-          dataState[0].ESD_ShortDepartment == null
+          dataState[0].UHR_Department == null
             ? "-"
-            : dataState[0].ESD_ShortDepartment;
+            : dataState[0].UHR_Department;
         const callLeadercode =
           dataState[0].UHR_LeaderCode == null
             ? "-"
@@ -694,6 +692,59 @@ class jobsController {
       }
     }
   }
+
+  async getDetailsJobByDate(req, res) {
+    const { start,end } = req.params;
+ 
+    
+    
+    if (start || end) {
+        const strQuery = `SELECT [call_id],[call_subno],[call_date],[call_request],[call_subtitle],[call_problem_device],
+  [call_user],[call_status],[call_date2],[call_device],[call_usercode],[call_department] FROM [dbo].V_HDALLJobs 
+  WHERE [call_date2] BETWEEN @start AND @end
+  ORDER BY call_date2 DESC, call_date DESC` ;
+      
+        const pool = await new sql.ConnectionPool(sqlConfig).connect();
+        await pool
+          .request()
+          .input("start",sql.DateTime,start)
+          .input("end",sql.DateTime,end)
+          .query(strQuery)
+          .then((result, err) => {
+            if (err) {
+             
+              
+              
+              return res.json({
+                err: true,
+                msg: err,
+              });
+            }
+      
+            if (result.recordset && result.recordset.length > 0) {
+           
+              
+              return res.status(200).json({
+                err: false,
+                result: result.recordset,
+                status: "Ok",
+              });
+            } else {
+              return res.json({
+                err: true,
+                msg: "Something went wrong!",
+              });
+            }
+          })
+          .catch((err) => {
+            return res.json({ err: true, msg: err.message });
+          });
+     
+    }else{
+      return res.json({err : true, msg : "Params is required!"})
+    }
+  }
+
 }
 
 module.exports = jobsController;
